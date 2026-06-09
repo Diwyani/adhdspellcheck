@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "TypeEase – ADHD Spell Corrector",
+  "version": "3.0",
+  "description": "Research-backed spell corrector for ADHD brains. Uses Damerau-Levenshtein algorithm + Birkbeck corpus to catch transpositions, doubling errors, omissions and more.",
+  "permissions": ["storage"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["corpus.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TypeEase"
+  }
+}

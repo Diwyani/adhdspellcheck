@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>TypeEase</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f10;--surface:#18181b;--surface2:#1f1f23;
+  --border:#27272a;--border2:#3f3f46;
+  --accent:#a78bfa;--green:#34d399;--amber:#fbbf24;
+  --red:#f87171;--blue:#60a5fa;--pink:#f472b6;
+  --text:#e4e4e7;--muted:#71717a;--muted2:#52525b;
+  --r:8px;--mono:'Courier New',monospace;
+}
+body{width:340px;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.5}
+
+/* HEADER */
+.hdr{padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#7c3aed);
+  border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.logo-name{font-size:14px;font-weight:700;letter-spacing:-.3px}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+.hdr-right{margin-left:auto;text-align:right}
+.session-count{font-size:20px;font-weight:700;color:var(--green);line-height:1}
+.session-label{font-size:10px;color:var(--muted)}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border)}
+.tab{flex:1;padding:8px 0;background:none;border:none;color:var(--muted);
+  font-size:12px;cursor:pointer;position:relative;transition:color .15s}
+.tab.on{color:var(--text)}
+.tab.on::after{content:'';position:absolute;bottom:0;left:10px;right:10px;
+  height:2px;background:var(--accent);border-radius:2px}
+
+/* PANELS */
+.panel{display:none}.panel.on{display:block}
+
+/* CORPUS STATUS */
+.corpus-bar{margin:10px 12px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r);padding:9px 12px;display:flex;align-items:center;gap:8px;font-size:12px}
+.corpus-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.corpus-dot.ok{background:var(--green)}.corpus-dot.warn{background:var(--amber)}
+.corpus-text{color:var(--muted);flex:1}
+.corpus-text strong{color:var(--text)}
+
+/* ERROR TYPE BREAKDOWN */
+.types-section{padding:0 12px 10px}
+.section-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--muted);margin-bottom:6px;padding-top:10px}
+.type-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.type-tag{font-size:9px;padding:2px 7px;border-radius:3px;
+  min-width:68px;text-align:center;letter-spacing:.3px;flex-shrink:0;font-weight:600}
+.tag-T{background:#3b1f6e;color:#c084fc}
+.tag-D{background:#1a3028;color:#6ee7b7}
+.tag-O{background:#2d2010;color:#fcd34d}
+.tag-I{background:#1e2535;color:var(--blue)}
+.tag-S{background:#2d1820;color:#fb7185}
+.tag-B{background:#1a1f2d;color:var(--blue)}
+.tag-X{background:#1e1e24;color:var(--muted)}
+.type-bar-wrap{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.type-bar{height:100%;border-radius:3px;transition:width .4s ease}
+.type-count{font-size:11px;color:var(--muted);min-width:24px;text-align:right}
+
+/* ADD CORRECTION */
+.add-section{padding:10px 12px;border-bottom:1px solid var(--border)}
+.field-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:6px}
+.add-row{display:flex;gap:6px;align-items:center}
+.add-row input{flex:1;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text);font-size:12px;padding:6px 9px;
+  font-family:var(--mono);outline:none;transition:border-color .15s}
+.add-row input:focus{border-color:var(--accent)}
+.add-row input::placeholder{color:var(--muted2)}
+.arrow{color:var(--muted2);flex-shrink:0}
+.add-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r);
+  width:30px;height:30px;font-size:18px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s;padding-bottom:1px}
+.add-btn:hover{opacity:.85}
+
+/* DICTIONARY LIST */
+.list-section{padding:8px 12px 12px}
+.list-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.list{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.list::-webkit-scrollbar{width:3px}
+.list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.entry{display:flex;align-items:center;gap:6px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:6px;padding:5px 9px}
+.entry-words{display:flex;align-items:center;gap:5px;flex:1;
+  font-family:var(--mono);font-size:11.5px;min-width:0}
+.entry .wrong{color:var(--red);opacity:.8;text-decoration:line-through;
+  max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entry .right{color:var(--green);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entry .arr{color:var(--muted2);font-size:10px;flex-shrink:0}
+.del{background:none;border:none;color:var(--muted2);font-size:15px;
+  cursor:pointer;padding:0 2px;transition:color .12s;flex-shrink:0}
+.del:hover{color:var(--red)}
+.mine-badge{font-size:9px;background:#1e2535;color:var(--blue);padding:1px 5px;
+  border-radius:3px;flex-shrink:0}
+
+/* HOMOPHONES */
+.hp-section{padding:10px 12px 12px}
+.info{background:#1f1a10;border:1px solid #3d2f10;border-radius:var(--r);
+  padding:9px 11px;margin-bottom:10px;font-size:11.5px;color:#d97706;line-height:1.6}
+.info strong{color:var(--amber)}
+.hp-list{display:flex;flex-direction:column;gap:3px;max-height:230px;overflow-y:auto}
+.hp-row{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  padding:6px 10px;font-family:var(--mono);font-size:11.5px;display:flex;gap:6px;align-items:baseline}
+.hp-main{color:var(--amber)}
+.hp-note{color:var(--muted);font-size:10.5px}
+
+/* ABOUT */
+.about{padding:12px 14px;font-size:12px}
+.about h3{font-size:11.5px;color:var(--accent);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.about p{color:var(--muted);line-height:1.6;margin-bottom:10px}
+.about .ref{font-size:10px;color:var(--muted2);margin-top:2px}
+
+/* TOAST */
+.toast{position:fixed;bottom:10px;left:50%;transform:translateX(-50%) translateY(24px);
+  background:var(--surface2);border:1px solid var(--border2);border-radius:20px;
+  padding:5px 14px;font-size:11.5px;color:var(--green);opacity:0;
+  transition:all .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo-icon">✦</div>
+  <div>
+    <div class="logo-name">TypeEase</div>
+    <div class="logo-sub">ADHD spell corrector</div>
+  </div>
+  <div class="hdr-right">
+    <div class="session-count" id="sessionCount">0</div>
+    <div class="session-label">fixed this session</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" data-t="stats">Stats</button>
+  <button class="tab" data-t="dictionary">Dictionary</button>
+  <button class="tab" data-t="homophones">Homophones</button>
+  <button class="tab" data-t="about">About</button>
+</div>
+
+<!-- STATS -->
+<div class="panel on" id="tab-stats">
+  <div class="corpus-bar" id="corpusBar">
+    <div class="corpus-dot warn" id="corpusDot"></div>
+    <div class="corpus-text" id="corpusText">
+      <strong>Corpus not loaded</strong> — using built-in dictionary + DL engine
+    </div>
+  </div>
+
+  <div class="types-section">
+    <div class="section-label">Corrections by error type</div>
+    <div id="typeBreakdown"></div>
+
+    <div class="section-label" style="margin-top:6px">Total all time</div>
+    <div style="font-size:22px;font-weight:700;color:var(--accent);padding:2px 0 6px"
+         id="totalCount">0</div>
+    <div style="font-size:11px;color:var(--muted)">errors caught by TypeEase</div>
+  </div>
+</div>
+
+<!-- DICTIONARY -->
+<div class="panel" id="tab-dictionary">
+  <div class="add-section">
+    <div class="field-label">Add your own</div>
+    <div class="add-row">
+      <input id="wrongIn" placeholder="misspeling" maxlength="50"/>
+      <span class="arrow">→</span>
+      <input id="rightIn" placeholder="misspelling" maxlength="50"/>
+      <button class="add-btn" id="addBtn">+</button>
+    </div>
+  </div>
+  <div class="list-section">
+    <div class="list-hdr">
+      <div class="section-label" style="padding-top:0">Your corrections</div>
+      <div style="font-size:10px;color:var(--muted)" id="userCount">0 entries</div>
+    </div>
+    <div class="list" id="userList"></div>
+  </div>
+</div>
+
+<!-- HOMOPHONES -->
+<div class="panel" id="tab-homophones">
+  <div class="hp-section">
+    <div class="info">
+      <strong>⚠ Homophones can't be auto-corrected</strong> — writing "their" vs
+      "there" are both valid words. TypeEase can't know which you meant without
+      reading the sentence. Knowing your weak spots helps.
+    </div>
+    <div class="hp-list" id="hpList"></div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="panel" id="tab-about">
+  <div class="about">
+    <h3>Why ADHD spelling has a pattern</h3>
+    <p>ADHD impairs the <em>graphemic buffer</em> — the working-memory store that holds letter sequences during writing. The errors aren't about not knowing how to spell. They're attention slipping mid-execution.</p>
+
+    <h3>Algorithm</h3>
+    <p>TypeEase uses <strong>Damerau-Levenshtein distance</strong> — the edit-distance measure that includes transpositions (swapped adjacent letters), which is the #1 ADHD error type. Built on a BK-tree for fast lookup. Seeded from the Birkbeck corpus (36,133 real misspelling pairs).</p>
+
+    <h3>Sources</h3>
+    <p class="ref">Adi-Japha et al. (2007) Cortex 43:700–709 · Re & Cornoldi (2015) J. Learning Disabilities · Tsai et al. (2011) PubMed 20951545 · Roberts et al. (2023) Neuropsychology · Birkbeck corpus, Roger Mitton, Oxford Text Archive</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TYPE_META = {
+  T: { label:'SWAP',   cls:'tag-T', name:'Transposition', color:'#a78bfa' },
+  D: { label:'DOUBLE', cls:'tag-D', name:'Doubling',       color:'#34d399' },
+  O: { label:'DROP',   cls:'tag-O', name:'Omission',       color:'#fbbf24' },
+  I: { label:'ADD',    cls:'tag-I', name:'Insertion',       color:'#60a5fa' },
+  S: { label:'SWAP1',  cls:'tag-S', name:'Substitution',    color:'#fb7185' },
+  B: { label:'SPACE',  cls:'tag-B', name:'Boundary',        color:'#60a5fa' },
+  builtin:{label:'BUILT', cls:'tag-X', name:'Built-in',     color:'#71717a'},
+  dl:     {label:'DL',    cls:'tag-X', name:'Algorithm',    color:'#71717a'},
+  X:      {label:'OTHER', cls:'tag-X', name:'Other',        color:'#71717a'},
+};
+
+const HOMOPHONES = [
+  ['there / their / they\'re', 'Place vs possession vs contraction'],
+  ['your / you\'re',           'Possession vs contraction'],
+  ['its / it\'s',              'Possession vs contraction'],
+  ['then / than',              'Time vs comparison'],
+  ['to / too / two',           'Direction vs also vs number'],
+  ['affect / effect',          'Verb vs noun (usually)'],
+  ['lose / loose',             'To misplace vs not tight'],
+  ['whose / who\'s',           'Possession vs contraction'],
+  ['were / where / we\'re',    'Past tense vs place vs contraction'],
+  ['accept / except',          'To receive vs to exclude'],
+  ['complement / compliment',  'Complete vs praise'],
+  ['principle / principal',    'Rule vs leader/main'],
+  ['stationary / stationery',  'Not moving vs paper'],
+  ['led / lead',               'Past tense vs the metal/verb'],
+];
+
+let userDict = {};
+let stats = { session: 0, total: 0, byType: {} };
+
+// Load state
+chrome.storage.sync.get(['userDict','stats'], result => {
+  userDict = result.userDict || {};
+  stats = result.stats || { session:0, total:0, byType:{} };
+  renderAll();
+});
+
+function renderAll() {
+  renderStats();
+  renderUserList();
+  renderHomophones();
+  checkCorpus();
+}
+
+function checkCorpus() {
+  // Try to detect if corpus.js was loaded
+  const hasCorpus = typeof window.TYPEEASE_CORPUS !== 'undefined' &&
+                    window.TYPEEASE_CORPUS !== null &&
+                    Object.keys(window.TYPEEASE_CORPUS || {}).length > 100;
+  const dot = document.getElementById('corpusDot');
+  const text = document.getElementById('corpusText');
+  if (hasCorpus) {
+    dot.className = 'corpus-dot ok';
+    const count = Object.keys(window.TYPEEASE_CORPUS).length.toLocaleString();
+    text.innerHTML = `<strong>Corpus loaded</strong> — ${count} misspelling pairs`;
+  } else {
+    dot.className = 'corpus-dot warn';
+    text.innerHTML = `<strong>Corpus not loaded</strong> — run build_corpus.py for 36k pairs`;
+  }
+}
+
+function renderStats() {
+  document.getElementById('sessionCount').textContent = stats.session || 0;
+  document.getElementById('totalCount').textContent = (stats.total || 0).toLocaleString();
+
+  const bd = document.getElementById('typeBreakdown');
+  bd.innerHTML = '';
+  const byType = stats.byType || {};
+  const maxCount = Math.max(...Object.values(byType), 1);
+
+  const order = ['T','D','O','I','S','B','builtin','dl','X'];
+  order.forEach(type => {
+    const count = byType[type] || 0;
+    if (count === 0 && !['T','D','O'].includes(type)) return;
+    const meta = TYPE_META[type] || TYPE_META.X;
+    const pct = Math.round((count / maxCount) * 100);
+    const row = document.createElement('div');
+    row.className = 'type-row';
+    row.innerHTML = `
+      <span class="type-tag ${meta.cls}">${meta.label}</span>
+      <div class="type-bar-wrap">
+        <div class="type-bar" style="width:${pct}%;background:${meta.color}33;
+          border-right:2px solid ${meta.color}"></div>
+      </div>
+      <span class="type-count">${count}</span>
+    `;
+    bd.appendChild(row);
+  });
+
+  if (Object.keys(byType).length === 0) {
+    bd.innerHTML = '<div style="color:var(--muted);font-size:11.5px;padding:4px 0">No corrections yet this session</div>';
+  }
+}
+
+function renderUserList() {
+  const list = document.getElementById('userList');
+  const entries = Object.entries(userDict);
+  document.getElementById('userCount').textContent = `${entries.length} ${entries.length===1?'entry':'entries'}`;
+  list.innerHTML = '';
+  if (entries.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:11.5px;padding:6px 2px">No custom corrections yet</div>';
+    return;
+  }
+  entries.forEach(([wrong, right]) => {
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <div class="entry-words">
+        <span class="wrong">${wrong}</span>
+        <span class="arr">→</span>
+        <span class="right">${right}</span>
+      </div>
+      <span class="mine-badge">MINE</span>
+      <button class="del" data-k="${wrong}" title="Remove">×</button>
+    `;
+    div.querySelector('.del').addEventListener('click', () => {
+      delete userDict[wrong];
+      chrome.storage.sync.set({ userDict });
+      renderUserList();
+      toast('Removed.');
+    });
+    list.appendChild(div);
+  });
+}
+
+function renderHomophones() {
+  const list = document.getElementById('hpList');
+  HOMOPHONES.forEach(([pair, note]) => {
+    const div = document.createElement('div');
+    div.className = 'hp-row';
+    div.innerHTML = `<span class="hp-main">${pair}</span><span class="hp-note">— ${note}</span>`;
+    list.appendChild(div);
+  });
+}
+
+// Add correction
+document.getElementById('addBtn').addEventListener('click', () => {
+  const w = document.getElementById('wrongIn').value.trim().toLowerCase();
+  const r = document.getElementById('rightIn').value.trim().toLowerCase();
+  if (!w || !r) { toast('Fill both fields'); return; }
+  if (w === r) { toast('Same word!'); return; }
+  userDict[w] = r;
+  chrome.storage.sync.set({ userDict });
+  renderUserList();
+  document.getElementById('wrongIn').value = '';
+  document.getElementById('rightIn').value = '';
+  toast(`Added: ${w} → ${r}`);
+});
+
+document.getElementById('rightIn').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('addBtn').click();
+});
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+    tab.classList.add('on');
+    document.getElementById('tab-' + tab.dataset.t).classList.add('on');
+  });
+});
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
